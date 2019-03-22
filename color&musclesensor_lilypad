@@ -1,0 +1,181 @@
+int redPin=16; //set red LED pin to 16
+int greenPin=17; //set green LED pin to 17
+int bluePin=18; // set blue LED pin to 6
+
+int S2= 5; //color sensor pin S2 pin 5
+int S3= 6; //color sensor pin S3 pin 6
+int outPin= 9; //color sensor out to pin 9
+
+int rColorStrength; // read color variables 
+int gColorStrength; // read color variables 
+int bColorStrength; // read color variables 
+
+unsigned int pulseWidth;
+
+#include <Servo.h> // include the server library
+
+Servo myservo;  // create servo object to control a servo
+Servo myservo2;  // create servo object to control a servo
+//Servo myservo3;  // create servo object to control a servo
+
+
+int sensor = 19;  // analog pin used to connect the potentiometer
+int val;    // variable to read the value from the analog pin
+
+int motor = 11; // servo motor connected to ditial pin 11
+//int motor2 = 5; // servo motor connected to ditial pin
+//int motor3 = 11; // servo motor connected to ditial pin
+int motorAngle; // grades thatt the motor will move
+
+void setup() {
+  // put your setup code here, to run once:
+
+Serial.begin(9600); // turn on serial port
+
+ myservo.attach(motor);  // attaches the servo on pin 9 to the servo object
+// myservo2.attach(motor2);  // attaches the servo on pin 10 to the servo object
+
+pinMode(redPin, OUTPUT);
+pinMode(greenPin, OUTPUT);
+pinMode(bluePin, OUTPUT);
+
+pinMode(S2, OUTPUT);
+pinMode(S3, OUTPUT);
+pinMode(outPin, INPUT);
+}
+
+void loop() {
+// put your main code here, to run repeatedly:
+
+ val = analogRead(sensor);            // reads the value of the potentiometer (value between 0 and 1023)
+  
+  motorAngle = map(val, 100, 400, 0, 180);     // scale it to use it with the servo (value between 0 and 180)
+  myservo.write(motorAngle);                  // sets the servo position according to the scaled value
+  myservo2.write(motorAngle);                  // sets the servo position according to the scaled value
+
+//read red component
+digitalWrite(S2, LOW); //S2 and S3 should be set LOW
+digitalWrite(S3, LOW); //S2 and S3 should be set LOW
+
+pulseWidth = pulseIn(outPin, LOW);
+
+rColorStrength = pulseWidth/400-1; // will take numbers between 0&255
+
+rColorStrength = (255-rColorStrength); // flips number so that high number means more color
+
+
+//read green component
+digitalWrite(S2, HIGH); //S2 and S3 should be set HIGH
+digitalWrite(S3, HIGH); //S2 and S3 should be set HIGH
+
+pulseWidth = pulseIn(outPin, LOW);
+
+gColorStrength = pulseWidth/400-1; // will take numbers between 0&255
+
+gColorStrength = (255-gColorStrength); // flips number so that high number means more color
+
+
+//read blue component
+digitalWrite(S2, LOW); //S2 should be set LOW
+digitalWrite(S3, HIGH); //S3 should be set HIGH
+
+pulseWidth = pulseIn(outPin, LOW);
+
+bColorStrength = pulseWidth/400-1; // will take numbers between 0&255
+
+bColorStrength = (255-bColorStrength); // flips number so that high number means more color
+
+
+if(rColorStrength>gColorStrength && gColorStrength>bColorStrength) {
+
+  rColorStrength = 255;
+  gColorStrength = gColorStrength/2;
+  bColorStrength = 0;
+
+}
+
+
+if(rColorStrength>bColorStrength && bColorStrength>gColorStrength) {
+
+  rColorStrength = 255;
+  bColorStrength = bColorStrength/2;
+  gColorStrength = 0;
+
+}
+
+
+if(gColorStrength>rColorStrength && rColorStrength>bColorStrength) {
+
+  gColorStrength = 255;
+  rColorStrength = rColorStrength/2;
+  bColorStrength = 0;
+
+}
+
+if(gColorStrength>bColorStrength && bColorStrength>rColorStrength) {
+
+  gColorStrength = 255;
+  bColorStrength = bColorStrength/2;
+  rColorStrength = 0;
+
+}
+
+if(bColorStrength>rColorStrength && rColorStrength>gColorStrength) {
+
+  bColorStrength = 255;
+  rColorStrength = rColorStrength/2;
+  gColorStrength = 0;
+
+}
+
+if(bColorStrength>gColorStrength && gColorStrength>rColorStrength) {
+
+ bColorStrength = 255;
+ gColorStrength = gColorStrength/2;
+ rColorStrength = 0;
+
+}
+
+bColorStrength = bColorStrength *.5; // too much blue
+//gColorStrength = gColorStrength *.2; // too much green
+//rColorStrength = rColorStrength *.2; // too much red
+
+Serial.print(rColorStrength);
+Serial.print(",");
+Serial.print(gColorStrength);
+Serial.print(",");
+Serial.println(bColorStrength);
+Serial.println("");
+analogWrite(redPin, rColorStrength);
+analogWrite(greenPin, gColorStrength);
+analogWrite(bluePin, bColorStrength);
+//Serial.print("sensor value "); 
+//Serial.println(val);  // print the pot value to the Serial Montor
+//Serial.print("motor angle "); 
+//Serial.println(motorAngle); 
+
+
+if(rColorStrength>bColorStrength && rColorStrength>gColorStrength) {
+
+  digitalWrite(redPin, HIGH); //if red is strongest color than red
+  digitalWrite(bluePin, LOW);
+  digitalWrite(greenPin, LOW);
+}
+
+if(gColorStrength>bColorStrength && gColorStrength>rColorStrength) {
+  digitalWrite(redPin, LOW); //if green is strongest color than green
+  digitalWrite(bluePin, LOW);
+  digitalWrite(greenPin, HIGH);
+  
+  }
+
+if(bColorStrength>gColorStrength && bColorStrength>rColorStrength) {
+  digitalWrite(redPin, LOW); //if blue is strongest color than blue
+  digitalWrite(bluePin, HIGH);
+  digitalWrite(greenPin, LOW);
+}
+  
+
+delay(250);
+
+}
